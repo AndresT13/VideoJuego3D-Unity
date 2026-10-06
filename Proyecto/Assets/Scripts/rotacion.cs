@@ -1,45 +1,29 @@
-﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class rotacion : MonoBehaviour
 {
-    public float velgiro = 40f;
-    public float velup = -40f;
-
-
-
-
-    // Use this for initialization
-    void Start()
-    {
-
-    }
-
-
+    // Velocidades por segundo (equivalen al movimiento anterior a 60 FPS)
+    public float velAvance = 6f;   // unidades/segundo (flecha derecha)
+    public float velSubida = 60f;  // unidades/segundo (flecha arriba)
+    public float velGiroZ = 6f;    // grados/segundo (flecha izquierda)
+    public float velGiroY = 6f;    // grados/segundo (flecha abajo)
 
     // Update is called once per frame
     void Update()
     {
+        float dt = Time.deltaTime;
 
-
-     //  GetComponent<Transform>().Rotate(0, velgiro * Time.deltaTime * Input.GetAxis("Horizontal"), 0);
-       // GetComponent<Transform>().Translate(0,0, velup * Time.deltaTime * Input.GetAxis("Vertical"));
-        	if (Input.GetKey (KeyCode.RightArrow)) {//up se mueve al levantar la tecla //si le quito el down va andar seguido, ejemplo (Input.GetKeyDowm (KeyCode.RightArrow))
-					transform.Translate (0, 0, -0.1f);
-				}
-				if (Input.GetKey (KeyCode.LeftArrow)) {//down al preciona//la velocidad la controlan los grados
-					transform.Rotate (0, 0,0.1f);
-				}
-				if (Input.GetKey (KeyCode.UpArrow)) {//getkey sostenida
-					transform.Translate (0, 1,0);
-				}
-				if (Input.GetKey(KeyCode.DownArrow)) {
-					transform.Rotate (0,-0.1f , 0);
-				}
-		
-
-
-
+        if (Input.GetKey(KeyCode.RightArrow)) {//getkey: mientras se mantiene presionada
+            transform.Translate(0, 0, -velAvance * dt);
+        }
+        if (Input.GetKey(KeyCode.LeftArrow)) {
+            transform.Rotate(0, 0, velGiroZ * dt);
+        }
+        if (Input.GetKey(KeyCode.UpArrow)) {
+            transform.Translate(0, velSubida * dt, 0);
+        }
+        if (Input.GetKey(KeyCode.DownArrow)) {
+            transform.Rotate(0, -velGiroY * dt, 0);
+        }
     }
 }
