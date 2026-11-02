@@ -1,0 +1,66 @@
+name: Build and deploy Unity WebGL
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: unity-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Build Unity game for WebGL
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath: Proyecto
+          unityVersion: 6000.4.10f1
+          targetPlatform: WebGL
+          buildsPath: build
+
+      - name: Prepare static site
+        shell: bash
+        run: |
+          set -euo pipefail
+          INDEX_FILE="$(find build -type f -name index.html -print -quit)"
+          if [ -z "$INDEX_FILE" ]; then
+            echo "No WebGL index.html was produced." >&2
+            exit 1
+          fi
+          mkdir -p _site
+          cp -a "$(dirname "$INDEX_FILE")/." _site/
+          touch _site/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
